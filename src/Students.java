@@ -10,70 +10,67 @@ public class Students {
     private int[] grades;
 
     public int[] insertGrades(String fileName) {
-        List gradesList = new ArrayList<>();
+        List<Integer> gradesList = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-        String line;
-        while ((line = br.readLine()) != null) {
-            String[] grades = line.split(",");
-            if (grades.length != 4) continue;
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] gradeStrings = line.split(",");
+                if (gradeStrings.length != 4) continue;
 
-            int encodedGrade = 0;
-            for (int i = 0; i < 4; i++) {
-                int grade = Integer.parseInt(grades[i]);
-                encodedGrade |= (grade & 0xFF) << (i * 8);
+                int encodedGrade = 0;
+                for (int i = 0; i < 4; i++) {
+                    int grade = Integer.parseInt(gradeStrings[i]);
+                    if (grade < 0 || grade > 100) throw new IllegalArgumentException("Grade must be between 0 and 100.");
+                    encodedGrade |= (grade & 0xFF) << (i * 8);
+                }
+                gradesList.add(encodedGrade);
             }
-            gradesList.add(Integer.valueOf(encodedGrade));
-        }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException | IllegalArgumentException e) {
+            System.err.println("Error processing file: " + e.getMessage());
         }
 
-        int[] gradesArray = new int[gradesList.size()];
-        for (int i = 0; i < gradesList.size(); i++) {
-            gradesArray[i] = (int) gradesList.get(i);
-        }
-        grades = Arrays.copyOf(gradesArray, gradesArray.length);
-        return gradesArray;
+        grades = gradesList.stream().mapToInt(i -> i).toArray();
+        return grades;
     }
 
     public void displayHex() {
         StringBuilder hexOutput = new StringBuilder();
         for (int grade : grades) {
-            hexOutput.append(String.format("%08X", grade));
+            hexOutput.append(String.format("%08X ", grade));
         }
         System.out.println(hexOutput.toString());
     }
 
     public int getStudentExam(int i, int j) {
-        String s = String.format("%08x", grades[i]);
-        int o = j * 2;
-        if (o - 2 < 0 || o - 1 >= s.length()) {
-            throw new IllegalArgumentException("Invalid indices for substring extraction.");
+        if (i < 0 || i >= grades.length || j < 0 || j > 3) {
+            throw new IllegalArgumentException("Invalid student or exam index.");
         }
-        String extracted = s.substring(o - 2, o - 1);
-        return Integer.parseInt(extracted, 16);
+        int grade = grades[i];
+        return (grade >> (8 * (3 - j))) & 0xFF;
     }
 
     public void setStudentExam(int i, int j, int k) {
-        String s = String.format("%08x", grades[i]);
-        String q = String.format("%02x", k); // Ensures k is represented as two hex digits
-        for (int m = 0; m < 2; m++) {
-            s = s.substring(0, j * 2 - 2 + m) + q.charAt(m) + s.substring(j * 2 - 2 + m + 1);
+        if (k < 0 || k > 100) throw new IllegalArgumentException("Grade must be between 0 and 100.");
+        if (i < 0 || i >= grades.length || j < 0 || j > 3) {
+            throw new IllegalArgumentException("Invalid student or exam index.");
         }
-        grades[i] = Integer.parseInt(s, 16);
+
+        grades[i] = (grades[i] & ~(0xFF << (8 * (3 - j)))) | ((k & 0xFF) << (8 * (3 - j)));
     }
 
     public float averageStudent(int i) {
+        if (i < 0 || i >= grades.length) throw new IllegalArgumentException("Invalid student index.");
         float avg = 0;
-        String s = String.format("%08x", grades[i]);
-        for (int m = 0; m < 8; m += 2) {
-            avg += Integer.parseInt(s.substring(m, m+2), 16);
+        int grade = grades[i];
+        for (int m = 0; m < 4; m++) {
+            avg += (grade >> (8 * (3 - m))) & 0xFF;
         }
         return avg / 4;
     }
 
     public float averageExam(int j) {
         if (grades.length == 0) return 0;
+        if (j < 0 || j > 3) throw new IllegalArgumentException("Invalid exam index.");
         float avg = 0;
         for (int i = 0; i < grades.length; i++) {
             avg += getStudentExam(i, j);
