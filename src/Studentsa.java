@@ -46,7 +46,7 @@ public class Students {
             throw new IllegalArgumentException("Invalid student or exam index.");
         }
         int grade = grades[i];
-        return (grade >> (8 * (3 - j))) & 0xFF; // הוצאת הציון המתאים בעזרת הזזת ביטים
+        return (grade >> (8 * (3 - j))) & 0xFF;
     }
 
     public void setStudentExam(int i, int j, int k) {
