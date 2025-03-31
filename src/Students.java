@@ -1,3 +1,8 @@
+/*
+Yagel Gross - 322450842 - יגל גרוס
+Tal Aronson - 212676977 - טל ארונסון
+ */
+
 import java.io.*;
 import java.util.*;
 
