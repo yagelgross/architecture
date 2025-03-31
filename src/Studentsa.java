@@ -6,7 +6,7 @@ Tal Aronson - 212676977 - טל ארונסון
 import java.io.*;
 import java.util.*;
 
-public class Studentsa {
+public class Students {
     private int[] grades;
 
     public int[] insertGrades(String fileName) {
