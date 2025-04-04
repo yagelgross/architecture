@@ -44,7 +44,7 @@ public class Students {
         System.out.println();
     }
 
-    public int getStudentExam(int i, int j) {
+    public int getStudentExam(int i, int j ) {
         if (i < 1 || i > gradesArray.length || j < 1 || j > 4) {
             throw new IllegalArgumentException("Invalid student or exam index");
         }
